@@ -10,7 +10,7 @@ public:
     int value; 
     int key; 
     Vertex* parent; 
-    vector <Vertex> adjacent;
+    // vector <Vertex> adjacent;
 
     // Constructor 
     Vertex (int value = 0);
