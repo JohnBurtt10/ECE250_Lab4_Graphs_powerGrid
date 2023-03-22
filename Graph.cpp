@@ -12,8 +12,12 @@ typedef std::tuple<Vertex, Vertex, unsigned int> edge;
 
 void Graph::insert(int a, int b, int weight) {
     // edge already exists in the graph 
+    // unsigned int test = w(a,b); 
     if (w(a,b)) { 
+    //     std::cout << "weight: " << test << std::endl; 
+    //     std::cout << "a: " << a << "b: " << b << std::endl;
         std::cout << "failure" << std::endl;
+        return; 
     }
     Vertex vertexA;
     Vertex vertexB; 
@@ -88,6 +92,7 @@ void Graph::graphDelete(int a){
             }
         }
      }
+     m--;
      std::cout << "success" << std::endl;
 }
 
@@ -173,6 +178,7 @@ vector <edge> Graph::MST() {
     edge edge; 
     unsigned int nodeIndex; 
     visited[s.value] = true;
+    std::cout << "root: " << s.value << std::endl;
 
     while (!Q.empty() && A.size() != m-1) {
         // std::cout << "picking from: " << std::endl;
@@ -180,13 +186,13 @@ vector <edge> Graph::MST() {
         // std::cout << std::get<0>(e).value << " " << std::get<1>(e).value << " " << std::get<2>(e) << std::endl;
         // }
         edge = heapExtractMin(Q);
-        // std::cout << "picked: " << std::endl;
-        // std::cout << std::get<0>(edge).value << " " << std::get<1>(edge).value << " " << std::get<2>(edge) << std::endl;
         // deleteLastNode(Q);
         nodeIndex = std::get<1>(edge).value;
         if (visited[nodeIndex]) { 
             continue;
         }
+        // std::cout << "picked: " << std::endl;
+        // std::cout << std::get<0>(edge).value << " " << std::get<1>(edge).value << " " << std::get<2>(edge) << std::endl;
         visited[nodeIndex] = true;
         A.push_back(edge);
 

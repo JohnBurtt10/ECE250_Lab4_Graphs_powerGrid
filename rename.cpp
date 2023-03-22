@@ -56,10 +56,16 @@ int main() {
             //Now do your parsing here. Remember to #include <fstream> at the top!
             fin >> m; 
             G.m += m;
-            while (fin) {
-                fin >> a; 
-                fin >> b; 
-                fin >> w; 
+            while (fin >> a && fin >> b && fin >> w) {
+                // a = 0;
+                // b = 0; 
+                // w = 0;
+                // fin >> a; 
+                // std::cout << "a: " << a << " ";
+                // fin >> b; 
+                // std::cout << "b: " << b << " ";
+                // fin >> w; 
+                // std::cout << "w: " << w << " " << std::endl;
                 G.insert(a,b,w);
             }
             std::cout << "success" << std::endl;
