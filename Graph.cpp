@@ -1,4 +1,5 @@
 #include "Graph.hpp"
+#include <tuple>
 using namespace std; 
 // Constructor 
 Graph::Graph()
@@ -10,58 +11,52 @@ Graph::~Graph() {
 }
 typedef std::tuple<Vertex, Vertex, unsigned int> edge; 
 
-void Graph::insert(int a, int b, int weight) {
+Vertex Graph::getVertex(int a) { 
+    Vertex vertex;
+    for (auto & v : V) {
+        if (v.value == a) {
+            vertex = v; 
+        }
+    }
+    return vertex;
+}
+
+bool Graph::insert(int a, int b, int weight) {
     // edge already exists in the graph 
-    // unsigned int test = w(a,b); 
     if (w(a,b)) { 
-    //     std::cout << "weight: " << test << std::endl; 
-    //     std::cout << "a: " << a << "b: " << b << std::endl;
-        std::cout << "failure" << std::endl;
-        return; 
+        return true;
     }
     Vertex vertexA;
     Vertex vertexB; 
-    bool exists = false; 
-    for (auto & v : V) {
-        if (v.value == a) {
-            vertexA = v; 
-            exists = true; 
-        }
-    }
-    if (!exists) { 
-        vertexA = Vertex(a); 
+    vertexA = getVertex(a);
+    // if a vertex with a value a does not already exist, create it
+    if (!vertexA.value) { 
+        vertexA.value = a; 
         V.push_back(vertexA);
     }
-    exists = false;
-    for (auto & v : V) {
-        if (v.value == b) {
-            vertexB = v; 
-            exists = true; 
-        }
-    }
-    if (!exists) { 
-        vertexB = Vertex(b); 
+    vertexB = getVertex(b);
+    // if a vertex with a value b does not already exist, create it
+    if (!vertexB.value) { 
+        vertexB.value = b; 
         V.push_back(vertexB);
     }
+    // push vertexB to the element of adjacent corresponding to vertexA's adjacent vertices, and vice versa
     adjacent[vertexA.value].push_back(vertexB);
     adjacent[vertexB.value].push_back(vertexA);
 
     E.push_back(edge(a, b, weight));
+    return false;
 }
 
 void Graph::print(int a){
     Vertex vertex; 
-    bool exists = false;
-    for (auto & v : V) {
-        if (v.value == a) {
-            vertex = v; 
-            exists = true; 
-        }
-    }
-    if (!exists) { 
+    vertex = getVertex(a);
+    // if a vertex with a value a does not exist, the command fails 
+    if (!vertex.value) { 
         std::cout << "failure" << std::endl;
         return;
     }
+    // all vertices adjacent to vertex are printed
     for (auto & v : adjacent[vertex.value]) {
         if (v.value != 0) { 
             std::cout << v.value << " "; 
@@ -71,7 +66,7 @@ void Graph::print(int a){
 }
 
 void Graph::graphDelete(int a){
-      Vertex vertex; 
+    Vertex vertex; 
     bool exists = false;
     for (auto & v : V) {
         if (v.value == a) {
@@ -80,10 +75,12 @@ void Graph::graphDelete(int a){
             v.value = 0;
         }
     }
+    // if a vertex with a value a does not exist, the command fails 
     if (!exists) { 
         std::cout << "failure" << std::endl;
         return;
     }
+    // the index of adjacent corresponding to vertex is wiped
     adjacent[vertex.value].clear();
      for (auto& v : V) {
         for (auto& b : adjacent[v.value]) { 
@@ -92,11 +89,48 @@ void Graph::graphDelete(int a){
             }
         }
      }
+     // any edge containing vertex is wiped
+      for (auto& e : E) {
+        if (std::get<0>(e).value == a || std::get<1>(e).value == a) { 
+            std::get<0>(e).value = 0; 
+        }
+    }
+    // decrement the number of vertex count for the graph
      m--;
      std::cout << "success" << std::endl;
 }
 
-// Function to heapify a subtree rooted at index i in the min heap
+// Uses Prim's algorithm, which is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph.
+vector <edge> Graph::MST() {
+    vector <edge> A;
+    // Initialize keys array to infinity
+    bool visited[50000] = {false};
+  
+    // Create priority queue Q of edges
+    vector <edge> Q;
+
+    //root 
+    Vertex s = V[0];
+    addEdges(Q, s); 
+    minHeapify(Q, 0);
+    edge edge; 
+    unsigned int nodeIndex; 
+    visited[s.value] = true;
+    while (!Q.empty() && A.size() != m-1) {
+        edge = heapExtractMin(Q);
+        nodeIndex = std::get<1>(edge).value;
+        if (visited[nodeIndex]) { 
+            continue;
+        }
+        visited[nodeIndex] = true;
+        A.push_back(edge);
+
+        addEdges(Q, std::get<1>(edge)); 
+    }
+    return A; 
+}
+
+// Heapify is the process of creating a heap data structure from a binary tree
 void Graph::minHeapify(vector<edge>& heap, unsigned int i) {
     // Find the indices of the left and right children of i
     int left = 2 * i + 1;
@@ -113,9 +147,12 @@ void Graph::minHeapify(vector<edge>& heap, unsigned int i) {
         smallest = right;
     }
 
-    // If the smallest element is not i, swap i with the smallest element and recurse on the swapped element
+    edge temp; 
     if (smallest != i) {
-        swap(heap[i], heap[smallest]);
+        // swap heap[i] with heap[smallest]
+        temp = heap[i]; 
+        heap[i] = heap[smallest];
+        heap[smallest] = temp;
         minHeapify(heap, smallest);
     }
 }
@@ -151,7 +188,6 @@ unsigned int Graph::w(unsigned int u, unsigned int v) {
         }
     }
     return 0;
-    // std::cout << "there is an issue with Graph::w" << std::endl;
 }
 
 void Graph::addEdges(vector <edge> &Q, Vertex s) { 
@@ -162,51 +198,6 @@ void Graph::addEdges(vector <edge> &Q, Vertex s) {
         }
      }
 }
-
-vector <edge> Graph::MST() {
-    vector <edge> A;
-    // Initialize keys array to infinity
-    bool visited[50000] = {false};
-  
-    // Create priority queue Q of edges
-    vector <edge> Q;
-
-    //root 
-    Vertex s = V[0];
-    addEdges(Q, s); 
-    minHeapify(Q, 0);
-    edge edge; 
-    unsigned int nodeIndex; 
-    visited[s.value] = true;
-    std::cout << "root: " << s.value << std::endl;
-
-    while (!Q.empty() && A.size() != m-1) {
-        // std::cout << "picking from: " << std::endl;
-        // for (auto& e : Q) {
-        // std::cout << std::get<0>(e).value << " " << std::get<1>(e).value << " " << std::get<2>(e) << std::endl;
-        // }
-        edge = heapExtractMin(Q);
-        // deleteLastNode(Q);
-        nodeIndex = std::get<1>(edge).value;
-        if (visited[nodeIndex]) { 
-            continue;
-        }
-        // std::cout << "picked: " << std::endl;
-        // std::cout << std::get<0>(edge).value << " " << std::get<1>(edge).value << " " << std::get<2>(edge) << std::endl;
-        visited[nodeIndex] = true;
-        A.push_back(edge);
-
-        addEdges(Q, std::get<1>(edge)); 
-    }
-    // Output MST edges
-    return A; 
-}
-
-// void Graph::cost(){
-
-// }
-
-
 
 
 

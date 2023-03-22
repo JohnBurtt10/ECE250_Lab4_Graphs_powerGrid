@@ -11,18 +11,15 @@ public:
     vector <Vertex> V; 
     vector <edge> E; 
     unsigned int m = 0;
-    unsigned int cost = INT_MAX;
-    vector <Vertex> adjacent[50000]; 
+    vector <Vertex> adjacent[50001]; 
     // Constructor 
     Graph(); 
     ~Graph();
     // Command handlers 
-    // void load(string word);
-    void insert(int a, int b, int w); 
+    bool insert(int a, int b, int w); 
     void print(int a); 
     void graphDelete(int a);
     vector <edge> MST();
-    // void cost();
 
     // helper function 
     void addEdges(vector <edge> &Q, Vertex s);
@@ -30,10 +27,7 @@ public:
     void minHeapify(vector<edge>& heap, unsigned int i);
     edge heapExtractMin(vector<edge>& heap);
     void heapInsert(vector<edge>& heap, edge newEdge);
-
-
-
-
+    Vertex getVertex(int a);
     
 };
 #endif
