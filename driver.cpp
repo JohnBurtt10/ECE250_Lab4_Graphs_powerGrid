@@ -105,7 +105,11 @@ int main() {
             for (auto& e : MST) {
                 std::cout << std::get<0>(e).value << " " << std::get<1>(e).value << " " << std::get<2>(e) << " ";
             }
-            std::cout << std::endl;
+            if (MST.size() == 0) {
+                std::cout << "failure" << std::endl;
+            } else { 
+                std::cout << std::endl;
+            }
         } else if (cmd == "COST") { 
              if (G.V.size() <=1) { 
                 std::cout << "cost is 0" << std::endl;
