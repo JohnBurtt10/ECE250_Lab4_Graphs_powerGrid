@@ -2,8 +2,9 @@
 #include <fstream> 
 #include <iostream>
 #include <tuple>
+#include <vector>
 using namespace std;
-typedef std::tuple<Vertex, Vertex, unsigned int> edge; 
+typedef std::tuple<unsigned int, unsigned int, unsigned int> edge; 
 class illegal_exception : public std::exception {
 public:
     illegal_exception(const std::string& message) : message_(message) {}
@@ -57,13 +58,12 @@ int main() {
             ifstream fin(fName.c_str()); //Note that we are using the variable as the filename
             //Now do your parsing here. Remember to #include <fstream> at the top!
             fin >> m; 
-            G.m += m;
+            // G.m += m;
             while (fin >> a && fin >> b && fin >> w) {
                 G.insert(a,b,w);
             }
             std::cout << "success" << std::endl;
         } else if (cmd == "INSERT") { 
-            G.m++;
             int a; 
             int b; 
             int w; 
@@ -73,6 +73,7 @@ int main() {
             if (illegalVertexArgument(a) || illegalVertexArgument(b) || illegalWeightArgument(w)) { 
                 continue;
             }
+
             bool edgeExists;
             edgeExists = G.insert(a,b,w); 
             // the 
@@ -96,14 +97,14 @@ int main() {
             }
             G.graphDelete(a);
         } else if (cmd == "MST") { 
-            if (!G.V.size()) { 
+            if (!G.m) { 
                 std::cout << "failure" << std::endl;
                 continue;
             }
             vector <edge> MST; 
             MST = G.MST();
             for (auto& e : MST) {
-                std::cout << std::get<0>(e).value << " " << std::get<1>(e).value << " " << std::get<2>(e) << " ";
+                std::cout << std::get<0>(e) << " " << std::get<1>(e) << " " << std::get<2>(e) << " ";
             }
             if (MST.size() == 0) {
                 std::cout << "failure" << std::endl;
@@ -111,13 +112,13 @@ int main() {
                 std::cout << std::endl;
             }
         } else if (cmd == "COST") { 
-             if (!G.V.size()) { 
+             if (!G.m) { 
                 std::cout << "cost is 0" << std::endl;
                 continue;
             }
             unsigned int cost = 0; 
             vector <edge> MST; 
-            MST = G.MST(); 
+            MST = G.MST();
             for (auto& e : MST) {
                 cost += std::get<2>(e); 
             }

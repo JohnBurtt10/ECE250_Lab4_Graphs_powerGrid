@@ -1,5 +1,8 @@
 #include "Graph.hpp"
 #include <tuple>
+#include <vector> 
+#include <iostream> 
+typedef std::tuple<unsigned int, unsigned int, unsigned int> edge; 
 using namespace std; 
 // Constructor 
 Graph::Graph()
@@ -8,17 +11,7 @@ Graph::Graph()
 
 // Destructor 
 Graph::~Graph() {
-}
-typedef std::tuple<Vertex, Vertex, unsigned int> edge; 
 
-Vertex Graph::getVertex(int a) { 
-    Vertex vertex;
-    for (auto & v : V) {
-        if (v.value == a) {
-            vertex = v; 
-        }
-    }
-    return vertex;
 }
 
 bool Graph::insert(int a, int b, int weight) {
@@ -26,73 +19,59 @@ bool Graph::insert(int a, int b, int weight) {
     if (w(a,b)) { 
         return true;
     }
-    Vertex vertexA;
-    Vertex vertexB; 
-    vertexA = getVertex(a);
-    // if a vertex with a value a does not already exist, create it
-    if (!vertexA.value) { 
-        vertexA.value = a; 
-        V.push_back(vertexA);
+    if (!V[a]) { 
+        V[a] = true;
+        m++; 
     }
-    vertexB = getVertex(b);
-    // if a vertex with a value b does not already exist, create it
-    if (!vertexB.value) { 
-        vertexB.value = b; 
-        V.push_back(vertexB);
+    if (!V[b]) { 
+        V[b] = true; 
+        m++;
     }
     // push vertexB to the element of adjacent corresponding to vertexA's adjacent vertices, and vice versa
-    adjacent[vertexA.value].push_back(vertexB);
-    adjacent[vertexB.value].push_back(vertexA);
-
+        adjacent[a].push_back(b);
+        adjacent[b].push_back(a);
+        // increment the number of vertices in the graph
     E.push_back(edge(a, b, weight));
     return false;
 }
 
 void Graph::print(int a){
-    Vertex vertex; 
-    vertex = getVertex(a);
     // if a vertex with a value a does not exist, the command fails 
-    if (!vertex.value) { 
+    if (!V[a]) { 
         std::cout << "failure" << std::endl;
         return;
     }
-    // all vertices adjacent to vertex are printed
-    for (auto & v : adjacent[vertex.value]) {
-        if (v.value != 0) { 
-            std::cout << v.value << " "; 
+    for (auto& v : adjacent[a]) {
+        if (v) { 
+            std::cout << v << " "; 
         }
     }
+
     std::cout << std::endl;
 }
 
 void Graph::graphDelete(int a){
-    Vertex vertex; 
-    bool exists = false;
-    for (auto & v : V) {
-        if (v.value == a) {
-            vertex = v; 
-            exists = true; 
-            v.value = 0;
-        }
-    }
     // if a vertex with a value a does not exist, the command fails 
-    if (!exists) { 
+    if (!V[a]) { 
         std::cout << "failure" << std::endl;
         return;
     }
+    V[a] = false;
     // the index of adjacent corresponding to vertex is wiped
-    adjacent[vertex.value].clear();
-     for (auto& v : V) {
-        for (auto& b : adjacent[v.value]) { 
-            if (b.value == a) { 
-                b.value = 0; 
+    adjacent[a].clear();
+    for (unsigned int i = 0; i < 50000; i++) { 
+        if (V[i]) { 
+            for (auto& v : adjacent[i]) {
+                if (v == a) {
+                    v = 0;
+                }
             }
         }
-     }
+    }
      // any edge containing vertex is wiped
-      for (auto& e : E) {
-        if (std::get<0>(e).value == a || std::get<1>(e).value == a) { 
-            std::get<0>(e).value = 0; 
+    for (auto& e : E) {
+        if (std::get<0>(e) == a || std::get<1>(e) == a) { 
+            std::get<0>(e) = 0; 
         }
     }
     // decrement the number of vertex count for the graph
@@ -110,15 +89,18 @@ vector <edge> Graph::MST() {
     vector <edge> Q;
 
     //root 
-    Vertex s = V[0];
-    addEdges(Q, s); 
+    unsigned int i = 0;
+    while (!V[i]) { 
+        i++;
+    }
+    addEdges(Q, i); 
     minHeapify(Q, 0);
     edge edge; 
     unsigned int nodeIndex; 
-    visited[s.value] = true;
-    while (!Q.empty() && A.size() < V.size()) {
+    visited[i] = true;
+    while (!Q.empty() && A.size() < m) {
         edge = heapExtractMin(Q);
-        nodeIndex = std::get<1>(edge).value;
+        nodeIndex = std::get<1>(edge);
         if (visited[nodeIndex]) { 
             continue;
         }
@@ -182,18 +164,18 @@ void Graph::heapInsert(vector<edge>& heap, edge newEdge) {
 
 unsigned int Graph::w(unsigned int u, unsigned int v) { 
     for (auto & it : E) {
-        if (std::get<0>(it).value == u && std::get<1>(it).value == v 
-        || std::get<0>(it).value == v && std::get<1>(it).value == u) { 
+        if (std::get<0>(it) == u && std::get<1>(it) == v 
+        || std::get<0>(it) == v && std::get<1>(it) == u) { 
             return std::get<2>(it);
         }
     }
     return 0;
 }
 
-void Graph::addEdges(vector <edge> &Q, Vertex s) { 
-     for (auto& v : adjacent[s.value]) {
-        if (v.value != 0) {
-            heapInsert(Q, (edge(s, v, w(s.value,v.value))));
+void Graph::addEdges(vector <edge> &Q, unsigned int firstVertex) { 
+     for (auto& adjacentVertex : adjacent[firstVertex]) {
+        if (adjacentVertex != 0) {
+            heapInsert(Q, (edge(firstVertex, adjacentVertex, w(firstVertex,adjacentVertex))));
             minHeapify(Q, Q.size()-1);
         }
      }
