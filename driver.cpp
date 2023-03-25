@@ -97,7 +97,7 @@ int main() {
             }
             G.graphDelete(a);
         } else if (cmd == "MST") { 
-            if (!G.m) { 
+            if (!G.numberOfVertices) { 
                 std::cout << "failure" << std::endl;
                 continue;
             }
@@ -112,7 +112,7 @@ int main() {
                 std::cout << std::endl;
             }
         } else if (cmd == "COST") { 
-             if (!G.m) { 
+             if (!G.numberOfVertices) { 
                 std::cout << "cost is 0" << std::endl;
                 continue;
             }

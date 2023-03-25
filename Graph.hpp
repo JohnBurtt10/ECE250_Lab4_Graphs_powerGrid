@@ -10,15 +10,15 @@ public:
     typedef std::tuple<unsigned int, unsigned int, unsigned int> edge; 
     bool V[50001] = {false}; 
     vector <edge> E; 
-    unsigned int m = 0;
-    vector <int>adjacent[50001];
+    unsigned int numberOfVertices = 0;
+    vector <unsigned int>adjacent[50001];
     // Constructor 
     Graph(); 
     ~Graph();
     // Command handlers 
-    bool insert(int a, int b, int w); 
-    void print(int a); 
-    void graphDelete(int a);
+    bool insert(unsigned int a, unsigned int b, unsigned int w); 
+    void print(unsigned int a); 
+    void graphDelete(unsigned int a);
     vector <edge> MST();
 
     // helper function 

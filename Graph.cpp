@@ -14,18 +14,18 @@ Graph::~Graph() {
 
 }
 
-bool Graph::insert(int a, int b, int weight) {
+bool Graph::insert(unsigned int a, unsigned int b, unsigned int weight) {
     // edge already exists in the graph 
     if (w(a,b)) { 
         return true;
     }
     if (!V[a]) { 
         V[a] = true;
-        m++; 
+        numberOfVertices++; 
     }
     if (!V[b]) { 
         V[b] = true; 
-        m++;
+        numberOfVertices++;
     }
     // push vertexB to the element of adjacent corresponding to vertexA's adjacent vertices, and vice versa
         adjacent[a].push_back(b);
@@ -35,7 +35,7 @@ bool Graph::insert(int a, int b, int weight) {
     return false;
 }
 
-void Graph::print(int a){
+void Graph::print(unsigned int a){
     // if a vertex with a value a does not exist, the command fails 
     if (!V[a]) { 
         std::cout << "failure" << std::endl;
@@ -50,7 +50,7 @@ void Graph::print(int a){
     std::cout << std::endl;
 }
 
-void Graph::graphDelete(int a){
+void Graph::graphDelete(unsigned int a){
     // if a vertex with a value a does not exist, the command fails 
     if (!V[a]) { 
         std::cout << "failure" << std::endl;
@@ -75,7 +75,7 @@ void Graph::graphDelete(int a){
         }
     }
     // decrement the number of vertex count for the graph
-     m--;
+     numberOfVertices--;
      std::cout << "success" << std::endl;
 }
 
@@ -98,7 +98,7 @@ vector <edge> Graph::MST() {
     edge edge; 
     unsigned int nodeIndex; 
     visited[i] = true;
-    while (!Q.empty() && A.size() < m) {
+    while (!Q.empty() && A.size() < numberOfVertices) {
         edge = heapExtractMin(Q);
         nodeIndex = std::get<1>(edge);
         if (visited[nodeIndex]) { 
@@ -176,7 +176,6 @@ void Graph::addEdges(vector <edge> &Q, unsigned int firstVertex) {
      for (auto& adjacentVertex : adjacent[firstVertex]) {
         if (adjacentVertex != 0) {
             heapInsert(Q, (edge(firstVertex, adjacentVertex, w(firstVertex,adjacentVertex))));
-            minHeapify(Q, Q.size()-1);
         }
      }
 }
