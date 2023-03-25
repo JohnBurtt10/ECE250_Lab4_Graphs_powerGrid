@@ -116,7 +116,7 @@ vector <edge> Graph::MST() {
     edge edge; 
     unsigned int nodeIndex; 
     visited[s.value] = true;
-    while (!Q.empty() && A.size() != m-1) {
+    while (!Q.empty() && A.size() < V.size()) {
         edge = heapExtractMin(Q);
         nodeIndex = std::get<1>(edge).value;
         if (visited[nodeIndex]) { 

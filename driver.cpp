@@ -96,7 +96,7 @@ int main() {
             }
             G.graphDelete(a);
         } else if (cmd == "MST") { 
-            if (G.V.size() <=1) { 
+            if (!G.V.size()) { 
                 std::cout << "failure" << std::endl;
                 continue;
             }
@@ -111,7 +111,7 @@ int main() {
                 std::cout << std::endl;
             }
         } else if (cmd == "COST") { 
-             if (G.V.size() <=1) { 
+             if (!G.V.size()) { 
                 std::cout << "cost is 0" << std::endl;
                 continue;
             }
