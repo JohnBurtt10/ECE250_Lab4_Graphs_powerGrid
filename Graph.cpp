@@ -2,11 +2,12 @@
 #include <tuple>
 #include <vector> 
 #include <iostream> 
+// value, key, parent
+typedef std::tuple<unsigned int, unsigned int, unsigned int> idk; 
 typedef std::tuple<unsigned int, unsigned int, unsigned int> edge; 
 using namespace std; 
 // Constructor 
-Graph::Graph()
-{
+Graph::Graph(){
 }
 
 // Destructor 
@@ -81,39 +82,60 @@ void Graph::graphDelete(unsigned int a){
 
 // Uses Prim's algorithm, which is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph.
 vector <edge> Graph::MST() {
-    vector <edge> A;
-    // Initialize keys array to infinity
-    bool visited[50000] = {false};
+    vector <unsigned int> T;
+    // position in heap
+    int position[50000] = {-1};
   
     // Create priority queue Q of edges
-    vector <edge> Q;
+    vector <unsigned int> Q;
+    unsigned int value = 0;
+    unsigned int i = 0; 
+    for (auto& v : V) {
+        if (v) { 
+            position[value] = i; 
+            Q.push_back(value); 
+            i++;
+        }
+        value++; 
+    }
+    unsigned int keys[50000]; 
+    unsigned int parents[50000];
+    for (int i = 0; i < 50000; i++) { 
+        keys[i] = 4294967295;
+        parents[i] = 0;
+    }
 
     //root 
-    unsigned int i = 0;
-    while (!V[i]) { 
-        i++;
+    keys[Q[0]] = 0;
+    unsigned int u; 
+    while (!Q.empty() && T.size() < numberOfVertices) {
+        u = heapExtractMin(Q, position, keys); 
+        minHeapify(Q, 0, position, keys);
+        T.push_back(u); 
+        for (auto& v : adjacent[u]) {
+            unsigned int weight = w(u,v); 
+            if (position[v] != -1 && weight < keys[v]) { 
+                keys[v] = weight;
+                updateHeap(Q, position[v], position, keys);
+                parents[v] = u;
+            }
+        }
+
     }
-    addEdges(Q, i); 
-    minHeapify(Q, 0);
-    edge edge; 
-    unsigned int nodeIndex; 
-    visited[i] = true;
-    while (!Q.empty() && A.size() < numberOfVertices) {
-        edge = heapExtractMin(Q);
-        nodeIndex = std::get<1>(edge);
-        if (visited[nodeIndex]) { 
+    vector <edge> A;
+    bool firstVertex = true; 
+    for (auto& v : T) { 
+        if (firstVertex) { 
+            firstVertex = false; 
             continue;
         }
-        visited[nodeIndex] = true;
-        A.push_back(edge);
-
-        addEdges(Q, std::get<1>(edge)); 
+        A.push_back(edge(v, parents[v], w(v,parents[v])));
     }
     return A; 
 }
 
 // Heapify is the process of creating a heap data structure from a binary tree
-void Graph::minHeapify(vector<edge>& heap, unsigned int i) {
+void Graph::minHeapify(vector<unsigned int>& heap, unsigned int i, int (&position)[50000], unsigned int (&keys)[50000]) {
     // Find the indices of the left and right children of i
     int left = 2 * i + 1;
     int right = 2 * i + 2;
@@ -121,46 +143,82 @@ void Graph::minHeapify(vector<edge>& heap, unsigned int i) {
     // Find the index of the smallest element among i, left, and right
     int smallest = i;
 
-    if (left < heap.size() && std::get<2>(heap[left]) < std::get<2>(heap[smallest])) {
+    // if (left < heap.size() && std::get<1>(heap[left]) < std::get<1>(heap[smallest])) {
+    if (left < heap.size() && keys[heap[left]] < keys[heap[smallest]]) {
         smallest = left;
     }
 
-    if (right < heap.size() && std::get<2>(heap[right]) < std::get<2>(heap[smallest])) {
+    // if (right < heap.size() && std::get<1>(heap[right]) < std::get<1>(heap[smallest])) {
+    if (right < heap.size() && keys[heap[right]] < keys[heap[smallest]]) {
         smallest = right;
     }
 
-    edge temp; 
     if (smallest != i) {
         // swap heap[i] with heap[smallest]
-        temp = heap[i]; 
-        heap[i] = heap[smallest];
-        heap[smallest] = temp;
-        minHeapify(heap, smallest);
+        swap(heap[i], heap[smallest]); 
+        // temp = heap[i]; 
+        // heap[i] = heap[smallest];
+        position[heap[smallest]] = smallest; 
+        // heap[smallest] = temp;
+        position[heap[i]] = i; 
+        minHeapify(heap, smallest, position, keys);
     }
 }
 
-edge Graph::heapExtractMin(vector<edge>& heap) { 
-    edge max = heap[0]; 
-    heap[0] = heap[heap.size()-1]; 
+unsigned int Graph::heapExtractMin(vector<unsigned int>& heap, int (&position)[50000], unsigned int (&keys)[50000]) { 
+    unsigned int min = heap[0]; 
+    heap[0] = heap[heap.size()-1];
+    position[heap[heap.size()-1]] = 0;
+    position[min] = -1;
     heap.pop_back();
-    minHeapify(heap, 0);
+    minHeapify(heap, 0, position, keys);
 
-    return max;
+    return min;
 }
 
-void Graph::heapInsert(vector<edge>& heap, edge newEdge) {
-    // Add the new element to the end of the heap
-    heap.push_back(newEdge);
-
-    // Get the index of the new element
-    int index = heap.size() - 1;
-
-    // Compare the new element with its parent and swap if necessary
-    while (index > 0 && std::get<2>(heap[index]) < std::get<2>(heap[(index-1)/2])) {
-        swap(heap[index], heap[(index-1)/2]);
-        index = (index-1)/2;
+void Graph::updateHeap(vector<unsigned int>& heap, unsigned int index, int (&position)[50000], unsigned int (&keys)[50000]) {
+    if (index >= heap.size()) {
+    // index is out of range, do something to handle the error
+    return;
+    }
+    int parent = (index - 1) / 2;
+    
+    // Heapify Up
+    while (index > 0 && keys[heap[index]] < keys[heap[parent]]) {
+        position[heap[index]] = parent; 
+        position[heap[parent]] = index;
+        swap(heap[index], heap[parent]);
+        index = parent;
+        parent = (index - 1) / 2;
+    }
+    
+    // Heapify Down
+    int n = heap.size();
+    while (true) {
+        int left_child = 2 * index + 1;
+        int right_child = 2 * index + 2;
+        int smallest = index;
+        
+        if (left_child < n && keys[heap[left_child]] < keys[heap[smallest]]) {
+            smallest = left_child;
+        }
+        
+        if (right_child < n && keys[heap[right_child]] < keys[heap[smallest]]) {
+            smallest = right_child;
+        }
+        
+        if (smallest != index) {
+            position[heap[index]] = smallest; 
+            position[heap[smallest]] = index;
+            swap(heap[index], heap[smallest]);
+            index = smallest;
+        }
+        else {
+            break;
+        }
     }
 }
+
 
 unsigned int Graph::w(unsigned int u, unsigned int v) { 
     for (auto & it : E) {
@@ -171,15 +229,6 @@ unsigned int Graph::w(unsigned int u, unsigned int v) {
     }
     return 0;
 }
-
-void Graph::addEdges(vector <edge> &Q, unsigned int firstVertex) { 
-     for (auto& adjacentVertex : adjacent[firstVertex]) {
-        if (adjacentVertex != 0) {
-            heapInsert(Q, (edge(firstVertex, adjacentVertex, w(firstVertex,adjacentVertex))));
-        }
-     }
-}
-
 
 
 
